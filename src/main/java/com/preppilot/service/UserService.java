@@ -1,6 +1,7 @@
 package com.preppilot.service;
 
 import java.time.LocalDateTime;
+import com.preppilot.exception.EmailAlreadyExistsException;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ public class UserService {
     public User registerUser(User user) {
 
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already registered");
+        	throw new EmailAlreadyExistsException("Email already registered");
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
