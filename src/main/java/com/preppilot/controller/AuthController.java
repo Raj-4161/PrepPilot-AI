@@ -12,6 +12,9 @@ import com.preppilot.service.UserService;
 
 import jakarta.validation.Valid;
 
+import com.preppilot.dto.LoginRequest;
+import com.preppilot.dto.LoginResponse;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -37,6 +40,25 @@ public class AuthController {
         response.setName(savedUser.getName());
         response.setEmail(savedUser.getEmail());
         response.setCreatedAt(savedUser.getCreatedAt().toString());
+
+        return response;
+    }
+    
+    @PostMapping("/login")
+    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
+
+        String token = userService.loginUser(
+                request.getEmail(),
+                request.getPassword()
+        );
+
+        User user = userService.getUserByEmail(request.getEmail());
+
+        LoginResponse response = new LoginResponse();
+        response.setToken(token);
+        response.setUserId(user.getId());
+        response.setName(user.getName());
+        response.setEmail(user.getEmail());
 
         return response;
     }
