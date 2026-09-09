@@ -1,14 +1,14 @@
 package com.preppilot.service;
 
 import java.time.LocalDateTime;
-import com.preppilot.exception.EmailAlreadyExistsException;
-import com.preppilot.security.JwtService;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.preppilot.entity.User;
+import com.preppilot.exception.EmailAlreadyExistsException;
 import com.preppilot.repository.UserRepository;
+import com.preppilot.security.JwtService;
 
 @Service
 public class UserService {
@@ -30,15 +30,16 @@ public class UserService {
     public User registerUser(User user) {
 
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-        	throw new EmailAlreadyExistsException("Email already registered");
+            throw new EmailAlreadyExistsException("Email already registered");
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole("USER");
         user.setCreatedAt(LocalDateTime.now());
 
         return userRepository.save(user);
     }
-    
+
     public String loginUser(String email, String password) {
 
         User user = userRepository.findByEmail(email)
@@ -48,9 +49,13 @@ public class UserService {
             throw new RuntimeException("Invalid email or password");
         }
 
-        return jwtService.generateToken(user.getId(), user.getEmail());
+        return jwtService.generateToken(
+                user.getId(),
+                user.getEmail(),
+                user.getRole()
+        );
     }
-    
+
     public User getUserByEmail(String email) {
 
         return userRepository.findByEmail(email)
