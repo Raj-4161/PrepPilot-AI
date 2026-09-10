@@ -26,6 +26,10 @@ public class GeminiService {
                 .build();
     }
 
+    // =========================================================
+    // SUMMARY GENERATION
+    // =========================================================
+
     public String generateSummary(String text) {
 
         String prompt = """
@@ -65,26 +69,96 @@ public class GeminiService {
         return extractGeneratedText(response);
     }
 
+    // =========================================================
+    // QUIZ GENERATION
+    // =========================================================
+
+    public String generateQuiz(String text) {
+
+        String prompt = """
+                You are an AI quiz generator for college students.
+
+                Based ONLY on the study material provided below,
+                generate exactly 5 multiple-choice questions.
+
+                For each question provide:
+
+                Question:
+                Option A:
+                Option B:
+                Option C:
+                Option D:
+                Correct Answer:
+
+                Requirements:
+                - Questions must be based only on the study material.
+                - Do not add outside information.
+                - Each question must have exactly four options.
+                - The correct answer must be one of A, B, C, or D.
+                - Make questions useful for exam preparation.
+                - Avoid duplicate questions.
+                - Use clear and simple language.
+
+                Study material:
+                """ + text;
+
+        Map<String, Object> requestBody = Map.of(
+                "contents", new Object[] {
+                        Map.of(
+                                "parts", new Object[] {
+                                        Map.of("text", prompt)
+                                }
+                        )
+                }
+        );
+
+        Map response = restClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/v1beta/models/{model}:generateContent")
+                        .queryParam("key", apiKey)
+                        .build(model))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(requestBody)
+                .retrieve()
+                .body(Map.class);
+
+        return extractGeneratedText(response);
+    }
+
+    // =========================================================
+    // COMMON GEMINI RESPONSE PARSER
+    // =========================================================
+
     @SuppressWarnings("unchecked")
     private String extractGeneratedText(Map response) {
 
-        var candidates = (java.util.List<Map<String, Object>>)
-                response.get("candidates");
+        var candidates =
+                (java.util.List<Map<String, Object>>)
+                        response.get("candidates");
 
         if (candidates == null || candidates.isEmpty()) {
             throw new RuntimeException("Gemini returned no response");
         }
 
-        Map<String, Object> firstCandidate = candidates.get(0);
+        Map<String, Object> firstCandidate =
+                candidates.get(0);
 
         Map<String, Object> content =
-                (Map<String, Object>) firstCandidate.get("content");
+                (Map<String, Object>)
+                        firstCandidate.get("content");
 
-        var parts = (java.util.List<Map<String, Object>>)
-                content.get("parts");
+        if (content == null) {
+            throw new RuntimeException(
+                    "Gemini response content is missing");
+        }
+
+        var parts =
+                (java.util.List<Map<String, Object>>)
+                        content.get("parts");
 
         if (parts == null || parts.isEmpty()) {
-            throw new RuntimeException("Gemini returned no generated text");
+            throw new RuntimeException(
+                    "Gemini returned no generated text");
         }
 
         return (String) parts.get(0).get("text");
