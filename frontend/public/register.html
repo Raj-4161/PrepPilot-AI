@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Create Account | PrepPilot AI</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #0b1120;
+            color: #f8fafc;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ================= NAVBAR ================= */
+
+        .navbar {
+            height: 72px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 7%;
+
+            border-bottom: 1px solid #1e293b;
+
+            background: rgba(11, 17, 32, 0.95);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            color: white;
+            text-decoration: none;
+
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 10px;
+
+            background: #6366f1;
+
+            color: white;
+
+            font-weight: 800;
+            font-size: 20px;
+        }
+
+        .home-btn {
+            color: #94a3b8;
+
+            text-decoration: none;
+
+            font-size: 13px;
+        }
+
+        .home-btn:hover {
+            color: white;
+        }
+
+        /* ================= MAIN ================= */
+
+        .main {
+            flex: 1;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 45px 20px;
+        }
+
+        .auth-wrapper {
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .auth-card {
+            background: #111827;
+
+            border: 1px solid #29364d;
+
+            border-radius: 18px;
+
+            padding: 35px;
+
+            box-shadow:
+                0 25px 70px rgba(0, 0, 0, 0.28);
+        }
+
+        .auth-header {
+            text-align: center;
+
+            margin-bottom: 25px;
+        }
+
+        .auth-icon {
+            width: 52px;
+            height: 52px;
+
+            margin: 0 auto 15px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 14px;
+
+            background: #191f4a;
+
+            border: 1px solid #303b68;
+
+            font-size: 23px;
+        }
+
+        .auth-header h1 {
+            font-size: 27px;
+
+            margin-bottom: 8px;
+        }
+
+        .auth-header p {
+            color: #94a3b8;
+
+            font-size: 13px;
+        }
+
+        /* ================= MESSAGE ================= */
+
+        .message {
+            display: none;
+
+            padding: 12px 14px;
+
+            border-radius: 9px;
+
+            margin-bottom: 18px;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+        }
+
+        .message.error {
+            display: block;
+
+            background: #24151a;
+
+            border: 1px solid #7f1d1d;
+
+            color: #fca5a5;
+        }
+
+        .message.success {
+            display: block;
+
+            background: #10231c;
+
+            border: 1px solid #166534;
+
+            color: #86efac;
+        }
+
+        /* ================= FORM ================= */
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+
+            color: #cbd5e1;
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+
+            padding: 13px 14px;
+
+            padding-right: 48px;
+
+            background: #0f172a;
+
+            border: 1px solid #334155;
+
+            border-radius: 9px;
+
+            color: white;
+
+            outline: none;
+
+            font-size: 14px;
+
+            transition: 0.2s;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #6366f1;
+
+            box-shadow:
+                0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .input-wrapper input::placeholder {
+            color: #64748b;
+        }
+
+        .toggle-password {
+            position: absolute;
+
+            right: 12px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            background: none;
+
+            border: none;
+
+            color: #64748b;
+
+            cursor: pointer;
+
+            font-size: 14px;
+        }
+
+        .toggle-password:hover {
+            color: #cbd5e1;
+        }
+
+        .field-hint {
+            color: #64748b;
+
+            font-size: 11px;
+
+            margin-top: 6px;
+        }
+
+        /* ================= REGISTER BUTTON ================= */
+
+        .register-btn {
+            width: 100%;
+
+            margin-top: 5px;
+
+            padding: 13px;
+
+            border: none;
+
+            border-radius: 9px;
+
+            background: #6366f1;
+
+            color: white;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .register-btn:hover {
+            opacity: 0.92;
+        }
+
+        .register-btn:disabled {
+            opacity: 0.55;
+
+            cursor: not-allowed;
+        }
+
+        /* ================= FOOTER ================= */
+
+        .auth-footer {
+            text-align: center;
+
+            margin-top: 21px;
+
+            color: #64748b;
+
+            font-size: 13px;
+        }
+
+        .auth-footer a {
+            color: #818cf8;
+
+            font-weight: 600;
+
+            text-decoration: none;
+        }
+
+        .auth-footer a:hover {
+            color: #a5b4fc;
+        }
+
+        .back-home {
+            display: block;
+
+            text-align: center;
+
+            margin-top: 17px;
+
+            color: #64748b;
+
+            font-size: 12px;
+
+            text-decoration: none;
+        }
+
+        .back-home:hover {
+            color: #cbd5e1;
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media (max-width: 600px) {
+
+            .navbar {
+                padding: 0 18px;
+            }
+
+            .auth-card {
+                padding: 27px 21px;
+            }
+
+            .auth-header h1 {
+                font-size: 24px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- ================= NAVBAR ================= -->
+
+    <header class="navbar">
+
+        <a
+            href="/"
+            class="brand">
+
+            <span class="brand-icon">
+                P
+            </span>
+
+            <span>
+                PrepPilot AI
+            </span>
+
+        </a>
+
+
+        <a
+            href="/"
+            class="home-btn">
+
+            ← Back to Home
+
+        </a>
+
+    </header>
+
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="main">
+
+        <div class="auth-wrapper">
+
+
+            <div class="auth-card">
+
+
+                <div class="auth-header">
+
+                    <div class="auth-icon">
+                        🚀
+                    </div>
+
+                    <h1>
+                        Create Your Account
+                    </h1>
+
+                    <p>
+                        Start your smarter learning journey with PrepPilot AI.
+                    </p>
+
+                </div>
+
+
+                <!-- MESSAGE -->
+
+                <div
+                    id="message"
+                    class="message">
+                </div>
+
+
+                <!-- FORM -->
+
+                <form id="registerForm">
+
+
+                    <div class="form-group">
+
+                        <label for="name">
+                            Full Name
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <input
+                                type="text"
+                                id="name"
+                                placeholder="Enter your name"
+                                autocomplete="name"
+                                maxlength="100"
+                                required>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            Email Address
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <input
+                                type="email"
+                                id="email"
+                                placeholder="you@example.com"
+                                autocomplete="email"
+                                required>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="password">
+                            Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <input
+                                type="password"
+                                id="password"
+                                placeholder="Minimum 6 characters"
+                                autocomplete="new-password"
+                                minlength="6"
+                                required>
+
+                            <button
+                                type="button"
+                                id="togglePassword"
+                                class="toggle-password">
+
+                                👁
+
+                            </button>
+
+                        </div>
+
+                        <div class="field-hint">
+                            Password must contain at least 6 characters.
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="confirmPassword">
+                            Confirm Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                placeholder="Re-enter your password"
+                                autocomplete="new-password"
+                                minlength="6"
+                                required>
+
+                            <button
+                                type="button"
+                                id="toggleConfirmPassword"
+                                class="toggle-password">
+
+                                👁
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        id="registerButton"
+                        class="register-btn">
+
+                        Create Account
+
+                    </button>
+
+
+                </form>
+
+
+                <div class="auth-footer">
+
+                    Already have an account?
+
+                    <a href="/login.html">
+                        Login
+                    </a>
+
+                </div>
+
+
+                <a
+                    href="/"
+                    class="back-home">
+
+                    ← Return to PrepPilot AI
+
+                </a>
+
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+
+    <script>
+
+
+        // =====================================================
+        // ALREADY LOGGED IN
+        // =====================================================
+
+        const existingToken =
+            localStorage.getItem("token");
+
+
+        if (existingToken) {
+
+            window.location.href =
+                "/dashboard.html";
+
+        }
+
+
+        // =====================================================
+        // ELEMENTS
+        // =====================================================
+
+        const registerForm =
+            document.getElementById(
+                "registerForm"
+            );
+
+        const registerButton =
+            document.getElementById(
+                "registerButton"
+            );
+
+        const message =
+            document.getElementById(
+                "message"
+            );
+
+        const password =
+            document.getElementById(
+                "password"
+            );
+
+        const confirmPassword =
+            document.getElementById(
+                "confirmPassword"
+            );
+
+
+        // =====================================================
+        // PASSWORD TOGGLE
+        // =====================================================
+
+        document
+            .getElementById(
+                "togglePassword"
+            )
+            .addEventListener(
+                "click",
+                function () {
+
+                    if (
+                        password.type ===
+                        "password"
+                    ) {
+
+                        password.type =
+                            "text";
+
+                        this.textContent =
+                            "🙈";
+
+                    } else {
+
+                        password.type =
+                            "password";
+
+                        this.textContent =
+                            "👁";
+
+                    }
+
+                }
+            );
+
+
+        document
+            .getElementById(
+                "toggleConfirmPassword"
+            )
+            .addEventListener(
+                "click",
+                function () {
+
+                    if (
+                        confirmPassword.type ===
+                        "password"
+                    ) {
+
+                        confirmPassword.type =
+                            "text";
+
+                        this.textContent =
+                            "🙈";
+
+                    } else {
+
+                        confirmPassword.type =
+                            "password";
+
+                        this.textContent =
+                            "👁";
+
+                    }
+
+                }
+            );
+
+
+        // =====================================================
+        // MESSAGE
+        // =====================================================
+
+        function showMessage(
+            text,
+            type = "error"
+        ) {
+
+            message.textContent =
+                text;
+
+            message.className =
+                "message " + type;
+
+        }
+
+
+        function clearMessage() {
+
+            message.textContent = "";
+
+            message.className =
+                "message";
+
+        }
+
+
+        // =====================================================
+        // REGISTER
+        // =====================================================
+
+        registerForm.addEventListener(
+            "submit",
+            async function (event) {
+
+                event.preventDefault();
+
+                clearMessage();
+
+
+                const name =
+                    document
+                        .getElementById("name")
+                        .value
+                        .trim();
+
+
+                const email =
+                    document
+                        .getElementById("email")
+                        .value
+                        .trim();
+
+
+                const passwordValue =
+                    password.value;
+
+
+                const confirmPasswordValue =
+                    confirmPassword.value;
+
+
+                if (!name ||
+                    !email ||
+                    !passwordValue ||
+                    !confirmPasswordValue) {
+
+                    showMessage(
+                        "Please fill in all required fields."
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    passwordValue.length < 6
+                ) {
+
+                    showMessage(
+                        "Password must contain at least 6 characters."
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    passwordValue !==
+                    confirmPasswordValue
+                ) {
+
+                    showMessage(
+                        "Passwords do not match."
+                    );
+
+                    return;
+
+                }
+
+
+                registerButton.disabled =
+                    true;
+
+                registerButton.textContent =
+                    "Creating Account...";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            "http://localhost:8080/api/auth/register",
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body: JSON.stringify({
+
+                                    name:
+                                        name,
+
+                                    email:
+                                        email,
+
+                                    password:
+                                        passwordValue
+
+                                })
+                            }
+                        );
+
+
+                    const data =
+                        await response
+                            .json()
+                            .catch(
+                                () => ({})
+                            );
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            data.message ||
+                            "Unable to create account."
+                        );
+
+                    }
+
+
+                    showMessage(
+                        "Account created successfully. Redirecting to login...",
+                        "success"
+                    );
+
+
+                    registerForm.reset();
+
+
+                    setTimeout(
+                        () => {
+
+                            window.location.href =
+                                "/login.html";
+
+                        },
+                        700
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Registration error:",
+                        error
+                    );
+
+
+                    showMessage(
+                        error instanceof Error
+                            ? error.message
+                            : "Unable to connect to the server."
+                    );
+
+
+                } finally {
+
+                    registerButton.disabled =
+                        false;
+
+                    registerButton.textContent =
+                        "Create Account";
+
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>

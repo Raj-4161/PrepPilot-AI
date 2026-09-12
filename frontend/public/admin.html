@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Panel | PrepPilot AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Inter, Arial, sans-serif;
+            background: #f5f7fb;
+            color: #172033;
+            min-height: 100vh;
+        }
+
+        /* ================= NAVBAR ================= */
+
+        .navbar {
+            height: 72px;
+            background: #ffffff;
+            border-bottom: 1px solid #e7eaf0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 6%;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            text-decoration: none;
+            color: #172033;
+            font-size: 21px;
+            font-weight: 750;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 11px;
+            background: #6366f1;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 800;
+            box-shadow: 0 7px 20px rgba(99, 102, 241, .22);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .admin-badge {
+            background: #eef2ff;
+            color: #4f46e5;
+            border: 1px solid #dfe3ff;
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .logout-btn {
+            border: 1px solid #dfe3ea;
+            background: white;
+            color: #475569;
+            padding: 9px 16px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: .2s;
+        }
+
+        .logout-btn:hover {
+            border-color: #6366f1;
+            color: #4f46e5;
+        }
+
+        /* ================= MAIN ================= */
+
+        .container {
+            width: min(1180px, 92%);
+            margin: auto;
+            padding: 42px 0 70px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            letter-spacing: -.5px;
+        }
+
+        .page-header p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: #475569;
+            border: 1px solid #dfe3ea;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .back-btn:hover {
+            border-color: #6366f1;
+            color: #4f46e5;
+        }
+
+        /* ================= STATS ================= */
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e8ebf1;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 5px 20px rgba(15, 23, 42, .04);
+        }
+
+        .stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 11px;
+            background: #eef2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 29px;
+            font-weight: 800;
+            color: #172033;
+        }
+
+        /* ================= USER PANEL ================= */
+
+        .users-panel {
+            background: white;
+            border: 1px solid #e8ebf1;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 5px 25px rgba(15, 23, 42, .045);
+        }
+
+        .panel-header {
+            padding: 23px 25px;
+            border-bottom: 1px solid #edf0f4;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .panel-title h2 {
+            font-size: 19px;
+            margin-bottom: 5px;
+        }
+
+        .panel-title p {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .search-box {
+            width: 280px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            height: 42px;
+            border: 1px solid #dfe3ea;
+            border-radius: 9px;
+            padding: 0 14px 0 40px;
+            outline: none;
+            font-size: 14px;
+            color: #172033;
+        }
+
+        .search-box input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, .09);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 12px;
+            color: #94a3b8;
+        }
+
+        /* ================= TABLE ================= */
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px 25px;
+            background: #fafbfc;
+            color: #64748b;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            font-weight: 700;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        td {
+            padding: 17px 25px;
+            border-bottom: 1px solid #f0f2f5;
+            font-size: 14px;
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover {
+            background: #fafbff;
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #eef2ff;
+            color: #4f46e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .user-name {
+            font-weight: 700;
+            color: #172033;
+            margin-bottom: 3px;
+        }
+
+        .user-email {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .role-admin {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .role-user {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .role-select {
+            border: 1px solid #dfe3ea;
+            border-radius: 8px;
+            padding: 7px 9px;
+            background: white;
+            color: #334155;
+            outline: none;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .role-select:focus {
+            border-color: #6366f1;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .delete-btn {
+            border: 1px solid #fecaca;
+            background: #fffafa;
+            color: #dc2626;
+            padding: 7px 11px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background: #fef2f2;
+            border-color: #fca5a5;
+        }
+
+        .delete-btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 55px 20px;
+            color: #64748b;
+        }
+
+        .empty-icon {
+            font-size: 35px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state h3 {
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        /* ================= ERROR ================= */
+
+        .error-box {
+            display: none;
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            color: #be123c;
+            border-radius: 10px;
+            padding: 13px 16px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        /* ================= SUCCESS ================= */
+
+        .success-box {
+            display: none;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #15803d;
+            border-radius: 10px;
+            padding: 13px 16px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        /* ================= LOADING ================= */
+
+        .loading {
+            padding: 55px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        /* ================= MOBILE ================= */
+
+        @media (max-width: 800px) {
+
+            .navbar {
+                padding: 0 4%;
+            }
+
+            .admin-badge {
+                display: none;
+            }
+
+            .container {
+                width: 94%;
+                padding-top: 30px;
+            }
+
+            .page-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .panel-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            th,
+            td {
+                padding: 13px 15px;
+            }
+
+            .brand {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+
+    <nav class="navbar">
+
+        <a href="/dashboard.html" class="brand">
+            <span class="brand-icon">P</span>
+            <span>PrepPilot AI</span>
+        </a>
+
+        <div class="nav-right">
+
+            <span class="admin-badge">
+                🛡️ Administrator
+            </span>
+
+            <button
+                class="logout-btn"
+                onclick="logout()">
+                Logout
+            </button>
+
+        </div>
+
+    </nav>
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="container">
+
+        <section class="page-header">
+
+            <div>
+                <h1>Admin Dashboard</h1>
+
+                <p>
+                    Manage users and monitor your PrepPilot AI platform.
+                </p>
+            </div>
+
+            <a
+                href="/dashboard.html"
+                class="back-btn">
+                ← User Dashboard
+            </a>
+
+        </section>
+
+
+        <!-- ================= MESSAGES ================= -->
+
+        <div
+            id="errorBox"
+            class="error-box">
+        </div>
+
+        <div
+            id="successBox"
+            class="success-box">
+        </div>
+
+
+        <!-- ================= STATS ================= -->
+
+        <section class="stats-grid">
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <div class="stat-icon">
+                        👥
+                    </div>
+
+                    <div class="stat-label">
+                        Total Users
+                    </div>
+
+                </div>
+
+                <div
+                    id="totalUsers"
+                    class="stat-value">
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <div class="stat-icon">
+                        🛡️
+                    </div>
+
+                    <div class="stat-label">
+                        Administrators
+                    </div>
+
+                </div>
+
+                <div
+                    id="totalAdmins"
+                    class="stat-value">
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <div class="stat-icon">
+                        🎓
+                    </div>
+
+                    <div class="stat-label">
+                        Regular Users
+                    </div>
+
+                </div>
+
+                <div
+                    id="totalRegularUsers"
+                    class="stat-value">
+                    0
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= USERS ================= -->
+
+        <section class="users-panel">
+
+            <div class="panel-header">
+
+                <div class="panel-title">
+
+                    <h2>User Management</h2>
+
+                    <p>
+                        View, manage roles and remove platform users.
+                    </p>
+
+                </div>
+
+                <div class="search-box">
+
+                    <span class="search-icon">
+                        🔎
+                    </span>
+
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search users...">
+
+                </div>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="usersTable">
+
+                        <tr>
+                            <td colspan="4">
+
+                                <div class="loading">
+                                    Loading users...
+                                </div>
+
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script>
+
+        /* =====================================================
+           AUTH
+           ===================================================== */
+
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            window.location.href = "/login.html";
+        }
+
+
+        /* =====================================================
+           JWT ROLE CHECK
+           ===================================================== */
+
+        function getTokenPayload() {
+
+            try {
+
+                const payload =
+                    token.split(".")[1];
+
+                return JSON.parse(
+                    atob(
+                        payload
+                            .replace(/-/g, "+")
+                            .replace(/_/g, "/")
+                    )
+                );
+
+            } catch (error) {
+
+                return null;
+
+            }
+        }
+
+
+        const tokenPayload =
+            getTokenPayload();
+
+
+        if (!tokenPayload ||
+            tokenPayload.role !== "ADMIN") {
+
+            window.location.href =
+                "/dashboard.html";
+        }
+
+
+        /* =====================================================
+           VARIABLES
+           ===================================================== */
+
+        let users = [];
+
+
+        /* =====================================================
+           API REQUEST
+           ===================================================== */
+
+        async function apiRequest(
+            url,
+            options = {}
+        ) {
+
+            const response =
+                await fetch(
+                    "http://localhost:8080" + url,
+                    {
+                        ...options,
+                        headers: {
+                            ...(options.headers || {}),
+                            "Authorization":
+                                "Bearer " + token
+                        }
+                    }
+                );
+
+
+            if (response.status === 401 ||
+                response.status === 403) {
+
+                localStorage.clear();
+
+                window.location.href =
+                    "/login.html";
+
+                return null;
+            }
+
+
+            const data =
+                await response.json()
+                    .catch(() => ({}));
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.message ||
+                    "Request failed."
+                );
+
+            }
+
+
+            return data;
+        }
+
+
+        /* =====================================================
+           LOAD DASHBOARD
+           ===================================================== */
+
+        async function loadDashboard() {
+
+            try {
+
+                const data =
+                    await apiRequest(
+                        "/api/admin/dashboard"
+                    );
+
+
+                if (!data) {
+                    return;
+                }
+
+
+                document.getElementById(
+                    "totalUsers"
+                ).textContent =
+                    data.totalUsers ?? 0;
+
+
+                document.getElementById(
+                    "totalAdmins"
+                ).textContent =
+                    data.totalAdmins ?? 0;
+
+
+                document.getElementById(
+                    "totalRegularUsers"
+                ).textContent =
+                    data.totalRegularUsers ?? 0;
+
+
+            } catch (error) {
+
+                showError(
+                    error.message ||
+                    "Unable to load admin dashboard."
+                );
+
+            }
+        }
+
+
+        /* =====================================================
+           LOAD USERS
+           ===================================================== */
+
+        async function loadUsers() {
+
+            try {
+
+                const data =
+                    await apiRequest(
+                        "/api/admin/users"
+                    );
+
+
+                if (!data) {
+                    return;
+                }
+
+
+                users =
+                    Array.isArray(data)
+                        ? data
+                        : [];
+
+
+                renderUsers(users);
+
+
+            } catch (error) {
+
+                showError(
+                    error.message ||
+                    "Unable to load users."
+                );
+
+
+                document.getElementById(
+                    "usersTable"
+                ).innerHTML = `
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    ⚠️
+                                </div>
+                                <h3>
+                                    Unable to load users
+                                </h3>
+                                <p>
+                                    Please try again.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+            }
+        }
+
+
+        /* =====================================================
+           RENDER USERS
+           ===================================================== */
+
+        function renderUsers(
+            userList
+        ) {
+
+            const table =
+                document.getElementById(
+                    "usersTable"
+                );
+
+
+            if (!userList.length) {
+
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="4">
+
+                            <div class="empty-state">
+
+                                <div class="empty-icon">
+                                    👥
+                                </div>
+
+                                <h3>
+                                    No users found
+                                </h3>
+
+                                <p>
+                                    There are no users matching your search.
+                                </p>
+
+                            </div>
+
+                        </td>
+                    </tr>
+                `;
+
+                return;
+            }
+
+
+            table.innerHTML =
+                userList
+                    .map(
+                        user =>
+                            createUserRow(user)
+                    )
+                    .join("");
+        }
+
+
+        /* =====================================================
+           USER ROW
+           ===================================================== */
+
+        function createUserRow(user) {
+
+            const name =
+                user.name || "Unknown User";
+
+            const email =
+                user.email || "No email";
+
+            const role =
+                user.role || "USER";
+
+            const initial =
+                name
+                    .charAt(0)
+                    .toUpperCase();
+
+
+            const joined =
+                formatDate(
+                    user.createdAt
+                );
+
+
+            const isCurrentAdmin =
+                Number(user.id) ===
+                Number(tokenPayload.userId);
+
+
+            const roleClass =
+                role === "ADMIN"
+                    ? "role-admin"
+                    : "role-user";
+
+
+            return `
+                <tr>
+
+                    <td>
+
+                        <div class="user-cell">
+
+                            <div class="avatar">
+                                ${escapeHtml(initial)}
+                            </div>
+
+                            <div>
+
+                                <div class="user-name">
+                                    ${escapeHtml(name)}
+                                </div>
+
+                                <div class="user-email">
+                                    ${escapeHtml(email)}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+
+                    <td>
+
+                        <span
+                            class="role-badge ${roleClass}">
+                            ${escapeHtml(role)}
+                        </span>
+
+                    </td>
+
+
+                    <td>
+                        ${joined || "—"}
+                    </td>
+
+
+                    <td>
+
+                        <div class="actions">
+
+                            ${
+                                isCurrentAdmin
+                                    ? `
+                                        <span
+                                            class="role-badge role-admin">
+                                            Current Admin
+                                        </span>
+                                      `
+                                    : `
+                                        <select
+                                            class="role-select"
+                                            onchange="changeRole(
+                                                ${user.id},
+                                                this.value
+                                            )">
+
+                                            <option
+                                                value="USER"
+                                                ${role === "USER" ? "selected" : ""}>
+                                                USER
+                                            </option>
+
+                                            <option
+                                                value="ADMIN"
+                                                ${role === "ADMIN" ? "selected" : ""}>
+                                                ADMIN
+                                            </option>
+
+                                        </select>
+
+
+                                        <button
+                                            class="delete-btn"
+                                            onclick="deleteUser(${user.id}, '${escapeAttribute(name)}')">
+                                            Delete
+                                        </button>
+                                      `
+                            }
+
+                        </div>
+
+                    </td>
+
+                </tr>
+            `;
+        }
+
+
+        /* =====================================================
+           CHANGE ROLE
+           ===================================================== */
+
+        async function changeRole(
+            userId,
+            role
+        ) {
+
+            const confirmed =
+                confirm(
+                    `Change this user's role to ${role}?`
+                );
+
+
+            if (!confirmed) {
+
+                renderUsers(users);
+
+                return;
+            }
+
+
+            try {
+
+                await apiRequest(
+                    `/api/admin/users/${userId}/role?role=${role}`,
+                    {
+                        method: "PUT"
+                    }
+                );
+
+
+                showSuccess(
+                    "User role updated successfully."
+                );
+
+
+                await loadDashboard();
+
+                await loadUsers();
+
+
+            } catch (error) {
+
+                showError(
+                    error.message ||
+                    "Unable to update user role."
+                );
+
+                await loadUsers();
+            }
+        }
+
+
+        /* =====================================================
+           DELETE USER
+           ===================================================== */
+
+        async function deleteUser(
+            userId,
+            userName
+        ) {
+
+            const confirmed =
+                confirm(
+                    `Are you sure you want to delete "${userName}"?\n\nThis will permanently remove the user's subjects, documents, quizzes, attempts and flashcards.`
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            try {
+
+                await apiRequest(
+                    `/api/admin/users/${userId}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+
+                showSuccess(
+                    "User deleted successfully."
+                );
+
+
+                await loadDashboard();
+
+                await loadUsers();
+
+
+            } catch (error) {
+
+                showError(
+                    error.message ||
+                    "Unable to delete user."
+                );
+
+            }
+        }
+
+
+        /* =====================================================
+           SEARCH
+           ===================================================== */
+
+        document
+            .getElementById("searchInput")
+            .addEventListener(
+                "input",
+                function () {
+
+                    const query =
+                        this.value
+                            .trim()
+                            .toLowerCase();
+
+
+                    if (!query) {
+
+                        renderUsers(users);
+
+                        return;
+                    }
+
+
+                    const filtered =
+                        users.filter(
+                            user => {
+
+                                const name =
+                                    String(
+                                        user.name || ""
+                                    ).toLowerCase();
+
+
+                                const email =
+                                    String(
+                                        user.email || ""
+                                    ).toLowerCase();
+
+
+                                const role =
+                                    String(
+                                        user.role || ""
+                                    ).toLowerCase();
+
+
+                                return (
+                                    name.includes(query) ||
+                                    email.includes(query) ||
+                                    role.includes(query)
+                                );
+
+                            }
+                        );
+
+
+                    renderUsers(filtered);
+
+                }
+            );
+
+
+        /* =====================================================
+           DATE
+           ===================================================== */
+
+        function formatDate(value) {
+
+            if (!value) {
+                return "";
+            }
+
+
+            const date =
+                new Date(value);
+
+
+            if (
+                isNaN(
+                    date.getTime()
+                )
+            ) {
+                return "";
+            }
+
+
+            return date.toLocaleDateString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                }
+            );
+        }
+
+
+        /* =====================================================
+           HTML ESCAPE
+           ===================================================== */
+
+        function escapeHtml(value) {
+
+            return String(value)
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+        }
+
+
+        function escapeAttribute(value) {
+
+            return String(value)
+                .replace(
+                    /\\/g,
+                    "\\\\"
+                )
+                .replace(
+                    /'/g,
+                    "\\'"
+                );
+        }
+
+
+        /* =====================================================
+           MESSAGES
+           ===================================================== */
+
+        function showError(message) {
+
+            const box =
+                document.getElementById(
+                    "errorBox"
+                );
+
+            box.textContent =
+                message;
+
+            box.style.display =
+                "block";
+
+
+            setTimeout(
+                () => {
+                    box.style.display =
+                        "none";
+                },
+                5000
+            );
+        }
+
+
+        function showSuccess(message) {
+
+            const box =
+                document.getElementById(
+                    "successBox"
+                );
+
+            box.textContent =
+                message;
+
+            box.style.display =
+                "block";
+
+
+            setTimeout(
+                () => {
+                    box.style.display =
+                        "none";
+                },
+                3500
+            );
+        }
+
+
+        /* =====================================================
+           LOGOUT
+           ===================================================== */
+
+        function logout() {
+
+            localStorage.removeItem("token");
+            localStorage.removeItem("userId");
+            localStorage.removeItem("userName");
+            localStorage.removeItem("userEmail");
+            localStorage.removeItem(
+                "currentSubjectId"
+            );
+
+            window.location.href =
+                "/login.html";
+        }
+
+
+        /* =====================================================
+           START
+           ===================================================== */
+
+        loadDashboard();
+        loadUsers();
+
+    </script>
+
+</body>
+</html>

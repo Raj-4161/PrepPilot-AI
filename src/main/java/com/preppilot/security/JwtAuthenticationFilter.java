@@ -1,14 +1,16 @@
 package com.preppilot.security;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,37 +32,111 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
+        String authHeader =
+                request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        /*
+         * If Authorization header is missing
+         * or does not contain Bearer token,
+         * continue the request normally.
+         */
+        if (authHeader == null ||
+                !authHeader.startsWith("Bearer ")) {
+
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = authHeader.substring(7);
+        String token =
+                authHeader.substring(7);
 
-        String email = jwtService.extractEmail(token);
-        String role = jwtService.extractRole(token);
+        try {
 
-        if (email != null &&
-            SecurityContextHolder.getContext().getAuthentication() == null) {
+            /*
+             * Extract email from JWT.
+             */
+            String email =
+                    jwtService.extractEmail(token);
 
-            if (jwtService.isTokenValid(token, email)) {
+            /*
+             * Only authenticate if there is
+             * no existing authentication.
+             */
+            if (email != null &&
+                    SecurityContextHolder
+                            .getContext()
+                            .getAuthentication() == null) {
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                email,
-                                null,
-                                Collections.singletonList(
-                                        new SimpleGrantedAuthority("ROLE_" + role)
-                                )
-                        );
+                /*
+                 * Extract role from JWT.
+                 */
+                String role =
+                        jwtService.extractRole(token);
 
-                SecurityContextHolder.getContext()
-                        .setAuthentication(authentication);
+                /*
+                 * IMPORTANT:
+                 * Your JwtService method requires
+                 * both token and email.
+                 */
+                if (jwtService.isTokenValid(token, email)) {
+
+                    SimpleGrantedAuthority authority =
+                            new SimpleGrantedAuthority(
+                                    "ROLE_" + role
+                            );
+
+                    List<SimpleGrantedAuthority> authorities =
+                            List.of(authority);
+
+                    /*
+                     * Create authenticated user.
+                     */
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    email,
+                                    null,
+                                    authorities
+                            );
+
+                    /*
+                     * Add request details.
+                     */
+                    authentication.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request)
+                    );
+
+                    /*
+                     * Store authentication in
+                     * Spring Security context.
+                     */
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(
+                                    authentication
+                            );
+                }
             }
+
+        } catch (JwtException |
+                 IllegalArgumentException e) {
+
+            /*
+             * Invalid / expired / malformed JWT.
+             *
+             * Clear authentication and allow
+             * Spring Security to handle the request.
+             */
+            SecurityContextHolder
+                    .clearContext();
         }
 
-        filterChain.doFilter(request, response);
+        /*
+         * Continue request processing.
+         */
+        filterChain.doFilter(
+                request,
+                response
+        );
     }
 }

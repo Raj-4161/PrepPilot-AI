@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Search - PrepPilot AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #0b1020;
+            color: #f5f7ff;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            height: 70px;
+            border-bottom: 1px solid #202842;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 7%;
+            background: #0d1326;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .brand span {
+            color: #7c5cff;
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            text-decoration: none;
+            color: #dce2f7;
+            border: 1px solid #303a59;
+            padding: 9px 16px;
+            border-radius: 9px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .nav-btn:hover {
+            border-color: #7c5cff;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .container {
+            width: min(1000px, 92%);
+            margin: 0 auto;
+            padding: 42px 0 60px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: #b9c2df;
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 28px;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            color: #ffffff;
+            transform: translateX(-3px);
+        }
+
+        .header {
+            margin-bottom: 28px;
+        }
+
+        .header h1 {
+            font-size: 34px;
+            margin-bottom: 9px;
+        }
+
+        .header p {
+            color: #9ca7c7;
+            line-height: 1.6;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .search-input {
+            flex: 1;
+            background: #121a31;
+            border: 1px solid #303a59;
+            border-radius: 11px;
+            padding: 14px 16px;
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #7c5cff;
+            box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.12);
+        }
+
+        .search-input::placeholder {
+            color: #6f7895;
+        }
+
+        .search-btn {
+            border: none;
+            border-radius: 11px;
+            padding: 0 24px;
+            background: #7c5cff;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.92;
+        }
+
+        .search-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            color: #9ca7c7;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .results {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .result-card {
+            background: #121a31;
+            border: 1px solid #252f4b;
+            border-radius: 14px;
+            padding: 20px;
+            transition: 0.2s;
+        }
+
+        .result-card:hover {
+            border-color: #46527a;
+            transform: translateY(-2px);
+        }
+
+        .result-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .result-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .result-title {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .result-description {
+            color: #9ca7c7;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .badge {
+            flex-shrink: 0;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 6px 9px;
+            border-radius: 7px;
+            background: #202a48;
+            color: #bfc8e7;
+            text-transform: uppercase;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 9px;
+            margin-top: 17px;
+            padding-top: 15px;
+            border-top: 1px solid #202a42;
+        }
+
+        .action-btn {
+            border: 1px solid #33415f;
+            background: #0f172a;
+            color: #dce2f7;
+            padding: 9px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .action-btn:hover {
+            border-color: #7c5cff;
+            background: #172033;
+            transform: translateY(-1px);
+        }
+
+        .empty {
+            text-align: center;
+            padding: 55px 20px;
+            border: 1px dashed #303a59;
+            border-radius: 14px;
+            color: #8993b2;
+        }
+
+        .empty h3 {
+            color: #dce2f7;
+            margin-bottom: 8px;
+        }
+
+        .error {
+            background: #321b26;
+            border: 1px solid #6b3044;
+            color: #ffb5c7;
+            padding: 14px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        @media (max-width: 650px) {
+
+            .navbar {
+                padding: 0 4%;
+            }
+
+            .nav-btn {
+                display: none;
+            }
+
+            .container {
+                width: 92%;
+                padding-top: 30px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .search-btn {
+                height: 48px;
+            }
+
+            .result-top {
+                flex-direction: column;
+            }
+
+            .result-actions {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+
+            .action-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <a href="/dashboard.html" class="brand">
+        Prep<span>Pilot</span> AI
+    </a>
+
+    <div class="nav-right">
+        <a href="/dashboard.html" class="nav-btn">
+            Dashboard
+        </a>
+    </div>
+
+</nav>
+
+
+<main class="container">
+
+    <a href="/dashboard.html" class="back-btn">
+        ← Dashboard
+    </a>
+
+    <div class="header">
+
+        <h1>Search</h1>
+
+        <p>
+            Quickly find your documents and AI-generated flashcards.
+        </p>
+
+    </div>
+
+
+    <form class="search-box" id="searchForm">
+
+        <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Search documents or flashcards..."
+            autocomplete="off"
+        >
+
+        <button
+            type="submit"
+            class="search-btn"
+            id="searchButton">
+            Search
+        </button>
+
+    </form>
+
+
+    <div id="errorMessage" class="error"></div>
+
+    <div id="status" class="status"></div>
+
+    <div id="results" class="results"></div>
+
+</main>
+
+
+<script>
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        window.location.href = "/login.html";
+    }
+
+
+    const searchForm =
+        document.getElementById("searchForm");
+
+    const searchInput =
+        document.getElementById("searchInput");
+
+    const searchButton =
+        document.getElementById("searchButton");
+
+    const resultsContainer =
+        document.getElementById("results");
+
+    const status =
+        document.getElementById("status");
+
+    const errorMessage =
+        document.getElementById("errorMessage");
+
+
+    searchForm.addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+            const query =
+                searchInput.value.trim();
+
+            errorMessage.style.display = "none";
+            errorMessage.textContent = "";
+
+            if (!query) {
+
+                status.textContent =
+                    "Please enter something to search.";
+
+                resultsContainer.innerHTML = "";
+
+                return;
+            }
+
+
+            searchButton.disabled = true;
+            searchButton.textContent = "Searching...";
+
+            status.textContent = "Searching...";
+
+            resultsContainer.innerHTML = "";
+
+
+            try {
+
+                const response = await fetch(
+                    `http://localhost:8080/api/search?q=${encodeURIComponent(query)}`,
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "Authorization":
+                                `Bearer ${token}`
+                        }
+                    }
+                );
+
+
+                if (
+                    response.status === 401 ||
+                    response.status === 403
+                ) {
+
+                    localStorage.clear();
+
+                    window.location.href =
+                        "/login.html";
+
+                    return;
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message ||
+                        "Search failed."
+                    );
+                }
+
+
+                if (
+                    !Array.isArray(data) ||
+                    data.length === 0
+                ) {
+
+                    status.textContent = "";
+
+                    resultsContainer.innerHTML = `
+                        <div class="empty">
+
+                            <h3>No results found</h3>
+
+                            <p>
+                                Try searching with another keyword.
+                            </p>
+
+                        </div>
+                    `;
+
+                    return;
+                }
+
+
+                status.textContent =
+                    `${data.length} result${data.length === 1 ? "" : "s"} found`;
+
+
+                data.forEach(function(result) {
+
+                    const card =
+                        document.createElement("div");
+
+                    card.className =
+                        "result-card";
+
+
+                    const isDocument =
+                        result.type === "DOCUMENT";
+
+
+                    const type =
+                        isDocument
+                            ? "Document"
+                            : "Flashcard";
+
+
+                    const actionButton =
+                        isDocument
+
+                            ? `
+                                <button
+                                    class="action-btn"
+                                    onclick="openDocument(${result.id})">
+                                    📄 Open Document
+                                </button>
+                              `
+
+                            : `
+                                <button
+                                    class="action-btn"
+                                    onclick="openFlashcard(${result.id})">
+                                    🃏 View Flashcard
+                                </button>
+                              `;
+
+
+                    card.innerHTML = `
+
+                        <div class="result-top">
+
+                            <div class="result-main">
+
+                                <div class="result-title">
+                                    ${escapeHtml(
+                                        result.title ||
+                                        "Untitled"
+                                    )}
+                                </div>
+
+                                <div class="result-description">
+                                    ${escapeHtml(
+                                        result.description ||
+                                        "No description available."
+                                    )}
+                                </div>
+
+                            </div>
+
+
+                            <span class="badge">
+                                ${type}
+                            </span>
+
+                        </div>
+
+
+                        <div class="result-actions">
+
+                            ${actionButton}
+
+                        </div>
+
+                    `;
+
+
+                    resultsContainer.appendChild(card);
+
+                });
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                status.textContent = "";
+
+                errorMessage.textContent =
+                    error.message ||
+                    "Unable to search right now.";
+
+                errorMessage.style.display =
+                    "block";
+
+            } finally {
+
+                searchButton.disabled = false;
+
+                searchButton.textContent =
+                    "Search";
+            }
+
+        }
+    );
+
+
+    /*
+     * DOCUMENT
+     *
+     * Search backend currently returns document ID,
+     * but not subject ID.
+     *
+     * We therefore first find the document's subject
+     * through the user's accessible subjects/documents.
+     */
+    async function openDocument(documentId) {
+
+        try {
+
+            const subjectsResponse =
+                await fetch(
+                    "http://localhost:8080/api/subjects",
+                    {
+                        headers: {
+                            "Authorization":
+                                `Bearer ${token}`
+                        }
+                    }
+                );
+
+
+            if (
+                subjectsResponse.status === 401 ||
+                subjectsResponse.status === 403
+            ) {
+
+                localStorage.clear();
+
+                window.location.href =
+                    "/login.html";
+
+                return;
+            }
+
+
+            const subjects =
+                await subjectsResponse.json();
+
+
+            if (!Array.isArray(subjects)) {
+
+                throw new Error(
+                    "Unable to find document."
+                );
+            }
+
+
+            /*
+             * Documents page requires subjectId.
+             *
+             * Check each subject until the searched
+             * document is found.
+             */
+            for (const subject of subjects) {
+
+                const response =
+                    await fetch(
+                        `http://localhost:8080/api/documents/subject/${subject.id}`,
+                        {
+                            headers: {
+                                "Authorization":
+                                    `Bearer ${token}`
+                            }
+                        }
+                    );
+
+
+                if (!response.ok) {
+                    continue;
+                }
+
+
+                const documents =
+                    await response.json();
+
+
+                if (!Array.isArray(documents)) {
+                    continue;
+                }
+
+
+                const found =
+                    documents.find(
+                        doc =>
+                            Number(doc.id) ===
+                            Number(documentId)
+                    );
+
+
+                if (found) {
+
+                    localStorage.setItem(
+                        "currentSubjectId",
+                        String(subject.id)
+                    );
+
+
+                    window.location.href =
+                        `/documents.html?subjectId=${subject.id}&documentId=${documentId}`;
+
+                    return;
+                }
+
+            }
+
+
+            showError(
+                "Unable to open this document."
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            showError(
+                "Unable to open this document."
+            );
+        }
+    }
+
+
+    /*
+     * FLASHCARD
+     *
+     * The existing flashcards page works using
+     * documentId, but the search API currently
+     * returns only flashcard ID.
+     *
+     * We resolve the document first.
+     */
+    async function openFlashcard(flashcardId) {
+
+        try {
+
+            const subjectsResponse =
+                await fetch(
+                    "http://localhost:8080/api/subjects",
+                    {
+                        headers: {
+                            "Authorization":
+                                `Bearer ${token}`
+                        }
+                    }
+                );
+
+
+            if (
+                subjectsResponse.status === 401 ||
+                subjectsResponse.status === 403
+            ) {
+
+                localStorage.clear();
+
+                window.location.href =
+                    "/login.html";
+
+                return;
+            }
+
+
+            const subjects =
+                await subjectsResponse.json();
+
+
+            if (!Array.isArray(subjects)) {
+
+                throw new Error();
+            }
+
+
+            /*
+             * Search result gives flashcard ID.
+             * Existing flashcard API is document based,
+             * so locate the flashcard's document.
+             */
+            for (const subject of subjects) {
+
+                const documentsResponse =
+                    await fetch(
+                        `http://localhost:8080/api/documents/subject/${subject.id}`,
+                        {
+                            headers: {
+                                "Authorization":
+                                    `Bearer ${token}`
+                            }
+                        }
+                    );
+
+
+                if (!documentsResponse.ok) {
+                    continue;
+                }
+
+
+                const documents =
+                    await documentsResponse.json();
+
+
+                if (!Array.isArray(documents)) {
+                    continue;
+                }
+
+
+                for (const doc of documents) {
+
+                    const flashcardsResponse =
+                        await fetch(
+                            `http://localhost:8080/api/flashcards/document/${doc.id}`,
+                            {
+                                headers: {
+                                    "Authorization":
+                                        `Bearer ${token}`
+                                }
+                            }
+                        );
+
+
+                    if (!flashcardsResponse.ok) {
+                        continue;
+                    }
+
+
+                    const flashcards =
+                        await flashcardsResponse.json();
+
+
+                    if (!Array.isArray(flashcards)) {
+                        continue;
+                    }
+
+
+                    const found =
+                        flashcards.find(
+                            flashcard =>
+                                Number(flashcard.id) ===
+                                Number(flashcardId)
+                        );
+
+
+                    if (found) {
+
+                        localStorage.setItem(
+                            "currentSubjectId",
+                            String(subject.id)
+                        );
+
+
+                        window.location.href =
+                            `/flashcards.html?documentId=${doc.id}`;
+
+                        return;
+                    }
+
+                }
+
+            }
+
+
+            showError(
+                "Unable to open this flashcard."
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            showError(
+                "Unable to open this flashcard."
+            );
+        }
+    }
+
+
+    function showError(message) {
+
+        errorMessage.textContent = message;
+
+        errorMessage.style.display =
+            "block";
+    }
+
+
+    function escapeHtml(value) {
+
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+</script>
+
+</body>
+</html>

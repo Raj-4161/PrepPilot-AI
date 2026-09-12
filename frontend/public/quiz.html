@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Quiz | PrepPilot AI</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#0f172a;color:#f8fafc;min-height:100vh}
+
+.navbar{
+    height:70px;background:#111827;border-bottom:1px solid #1e293b;
+    display:flex;align-items:center;justify-content:space-between;padding:0 40px
+}
+.logo{color:#6366f1;font-size:22px;font-weight:bold}
+.nav-right{display:flex;align-items:center;gap:18px}
+.user-name{color:#cbd5e1;font-size:14px}
+.logout-btn{
+    background:transparent;border:1px solid #334155;color:#cbd5e1;
+    padding:9px 16px;border-radius:8px;cursor:pointer
+}
+.logout-btn:hover{background:#1e293b}
+
+.container{max-width:850px;margin:auto;padding:40px 20px 60px}
+
+.page-header{
+    display:flex;justify-content:space-between;align-items:center;
+    gap:20px;margin-bottom:28px
+}
+.header-left h1{font-size:30px;margin-bottom:8px}
+.header-left p{color:#94a3b8;font-size:14px}
+.header-actions{display:flex;gap:10px}
+.nav-btn{
+    background:#1e293b;border:1px solid #334155;color:#e2e8f0;
+    padding:10px 16px;border-radius:8px;cursor:pointer;white-space:nowrap
+}
+.nav-btn:hover{border-color:#6366f1}
+
+.quiz-info{
+    background:#111827;border:1px solid #1e293b;border-radius:14px;
+    padding:20px;margin-bottom:20px
+}
+.quiz-info-top{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:13px
+}
+.quiz-title{font-size:16px;font-weight:bold}
+.progress-text{color:#94a3b8;font-size:13px}
+.progress-track{
+    height:7px;background:#1e293b;border-radius:10px;overflow:hidden
+}
+.progress-bar{
+    height:100%;width:0%;background:#6366f1;transition:width .3s ease
+}
+
+.quiz-card{
+    background:#111827;border:1px solid #1e293b;border-radius:16px;
+    padding:30px
+}
+.question-number{
+    color:#818cf8;font-size:12px;font-weight:bold;
+    letter-spacing:.7px;margin-bottom:14px
+}
+.question-text{font-size:21px;line-height:1.55;margin-bottom:25px}
+
+.options{display:flex;flex-direction:column;gap:12px}
+.option{
+    width:100%;background:#172033;border:1px solid #334155;color:#e2e8f0;
+    padding:16px;border-radius:10px;text-align:left;cursor:pointer;
+    display:flex;align-items:center;gap:13px;transition:.2s
+}
+.option:hover{border-color:#6366f1;transform:translateY(-1px)}
+.option.selected{border-color:#6366f1;background:#1e1b4b}
+.option-letter{
+    min-width:34px;height:34px;border-radius:8px;background:#1e293b;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:bold;color:#cbd5e1
+}
+.option.selected .option-letter{background:#6366f1;color:white}
+.option-text{font-size:14px;line-height:1.5}
+
+.quiz-navigation{
+    display:flex;justify-content:space-between;
+    margin-top:25px;gap:15px
+}
+.quiz-nav-btn{
+    padding:11px 20px;border-radius:9px;border:1px solid #334155;
+    background:#1e293b;color:#e2e8f0;cursor:pointer
+}
+.quiz-nav-btn:hover{border-color:#6366f1}
+.quiz-nav-btn:disabled{opacity:.4;cursor:not-allowed}
+.submit-btn{
+    background:#6366f1;border:none;color:white;padding:11px 20px;
+    border-radius:9px;cursor:pointer;font-weight:bold
+}
+.submit-btn:hover{opacity:.9}
+
+.loading{
+    background:#111827;border:1px solid #1e293b;border-radius:15px;
+    padding:60px 20px;text-align:center;color:#94a3b8
+}
+.error-box{
+    display:none;background:#111827;border:1px solid #7f1d1d;color:#fca5a5;
+    border-radius:10px;padding:14px;margin-bottom:20px;text-align:center;
+    font-size:14px
+}
+
+/* RESULT */
+.result-card{
+    background:#111827;border:1px solid #1e293b;border-radius:16px;
+    padding:40px 25px;text-align:center
+}
+.result-icon{font-size:50px;margin-bottom:15px}
+.result-card h2{font-size:26px;margin-bottom:10px}
+.result-score{
+    font-size:44px;font-weight:bold;color:#818cf8;margin:15px 0
+}
+.result-message{color:#94a3b8;font-size:14px;margin-bottom:25px}
+
+.result-actions{
+    display:flex;justify-content:center;gap:12px;margin-top:25px
+}
+.retry-btn,.history-btn{
+    padding:11px 18px;border-radius:9px;cursor:pointer
+}
+.retry-btn{background:#6366f1;color:white;border:none}
+.history-btn{
+    background:#1e293b;color:#e2e8f0;border:1px solid #334155
+}
+
+/* QUESTION-WISE RESULTS */
+.answer-results{
+    margin-top:30px;text-align:left
+}
+.answer-results h3{
+    font-size:18px;margin-bottom:15px
+}
+.answer-result{
+    background:#172033;border:1px solid #334155;
+    border-radius:12px;padding:18px;margin-bottom:12px
+}
+.answer-result.correct{border-color:#166534}
+.answer-result.wrong{border-color:#7f1d1d}
+.answer-question{
+    font-size:15px;font-weight:bold;line-height:1.5;
+    margin-bottom:12px
+}
+.answer-row{
+    display:flex;gap:8px;font-size:13px;
+    color:#cbd5e1;margin-top:7px
+}
+.answer-status{
+    margin-top:12px;font-weight:bold;font-size:13px
+}
+.answer-result.correct .answer-status{color:#4ade80}
+.answer-result.wrong .answer-status{color:#f87171}
+
+@media(max-width:700px){
+    .navbar{padding:0 18px}
+    .user-name{display:none}
+    .container{padding:30px 15px 50px}
+    .page-header{flex-direction:column;align-items:stretch}
+    .header-left h1{font-size:26px}
+    .header-actions{display:grid;grid-template-columns:1fr 1fr}
+    .nav-btn{width:100%}
+    .quiz-card{padding:22px}
+    .question-text{font-size:18px}
+    .quiz-navigation{flex-wrap:wrap}
+    .quiz-nav-btn,.submit-btn{flex:1}
+    .result-actions{flex-direction:column}
+    .answer-row{flex-direction:column;gap:3px}
+}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="logo">🚀 PrepPilot AI</div>
+    <div class="nav-right">
+        <span id="userName" class="user-name">Loading...</span>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+</nav>
+
+<main class="container">
+
+    <div class="page-header">
+        <div class="header-left">
+            <h1>📝 AI Quiz</h1>
+            <p>Test your understanding with AI-generated questions.</p>
+        </div>
+
+        <div class="header-actions">
+            <button class="nav-btn" onclick="goDocuments()">← Documents</button>
+            <button class="nav-btn" onclick="goDashboard()">← Dashboard</button>
+        </div>
+    </div>
+
+    <div id="errorBox" class="error-box"></div>
+
+    <div id="quizArea">
+        <div class="loading">🤖 Preparing your AI quiz...</div>
+    </div>
+
+</main>
+
+<script>
+const token=localStorage.getItem("token");
+
+if(!token){
+    window.location.href="/login.html";
+}
+
+const storedName=localStorage.getItem("userName");
+
+if(storedName){
+    document.getElementById("userName").textContent=storedName;
+}
+
+const params=new URLSearchParams(window.location.search);
+const documentId=params.get("documentId");
+
+let quiz=null;
+let currentQuestion=0;
+let selectedAnswers={};
+let submitted=false;
+
+async function loadQuiz(){
+    if(!documentId){
+        showError("Document ID is missing.");
+        return;
+    }
+
+    try{
+        const existingResponse=await fetch(
+            "http://localhost:8080/api/quizzes/document/"+documentId,
+            {
+                method:"GET",
+                headers:{
+                    "Authorization":"Bearer "+token
+                }
+            }
+        );
+
+        if(existingResponse.status===401||existingResponse.status===403){
+            localStorage.clear();
+            window.location.href="/login.html";
+            return;
+        }
+
+        const existingData=await existingResponse.json().catch(()=>[]);
+
+        if(
+            existingResponse.ok &&
+            Array.isArray(existingData) &&
+            existingData.length>0
+        ){
+            quiz=existingData[existingData.length-1];
+            renderQuiz();
+            return;
+        }
+
+        await generateQuiz();
+
+    }catch(error){
+        console.error(error);
+        showError("Unable to load quiz. Please try again.");
+    }
+}
+
+async function generateQuiz(){
+    const area=document.getElementById("quizArea");
+
+    area.innerHTML=`
+        <div class="loading">
+            🤖 Generating your AI quiz...<br><br>
+            This may take a few seconds.
+        </div>
+    `;
+
+    try{
+        const response=await fetch(
+            "http://localhost:8080/api/quizzes/documents/"+documentId+"/generate",
+            {
+                method:"POST",
+                headers:{
+                    "Authorization":"Bearer "+token
+                }
+            }
+        );
+
+        const data=await response.json().catch(()=>({}));
+
+        if(response.status===401||response.status===403){
+            localStorage.clear();
+            window.location.href="/login.html";
+            return;
+        }
+
+        if(!response.ok){
+            throw new Error(data.message||"Unable to generate quiz.");
+        }
+
+        quiz=data;
+        currentQuestion=0;
+        selectedAnswers={};
+        submitted=false;
+        renderQuiz();
+
+    }catch(error){
+        console.error(error);
+        showError(error.message||"Unable to generate quiz.");
+
+        area.innerHTML=`
+            <div class="loading">
+                ⚠️ Unable to prepare quiz.
+            </div>
+        `;
+    }
+}
+
+function renderQuiz(){
+    if(!quiz||!quiz.questions||quiz.questions.length===0){
+        showError("No quiz questions available.");
+        return;
+    }
+
+    const question=quiz.questions[currentQuestion];
+    const total=quiz.questions.length;
+    const progress=((currentQuestion+1)/total)*100;
+    const selected=selectedAnswers[question.id];
+    const area=document.getElementById("quizArea");
+
+    area.innerHTML=`
+        <div class="quiz-info">
+            <div class="quiz-info-top">
+                <span class="quiz-title">
+                    ${escapeHtml(quiz.title||"AI Generated Quiz")}
+                </span>
+
+                <span class="progress-text">
+                    Question ${currentQuestion+1} of ${total}
+                </span>
+            </div>
+
+            <div class="progress-track">
+                <div class="progress-bar" style="width:${progress}%"></div>
+            </div>
+        </div>
+
+        <div class="quiz-card">
+            <div class="question-number">
+                QUESTION ${currentQuestion+1}
+            </div>
+
+            <div class="question-text">
+                ${escapeHtml(question.question)}
+            </div>
+
+            <div class="options">
+                ${createOption("A",question.optionA,selected)}
+                ${createOption("B",question.optionB,selected)}
+                ${createOption("C",question.optionC,selected)}
+                ${createOption("D",question.optionD,selected)}
+            </div>
+
+            <div class="quiz-navigation">
+                <button
+                    class="quiz-nav-btn"
+                    onclick="previousQuestion()"
+                    ${currentQuestion===0?"disabled":""}>
+                    ← Previous
+                </button>
+
+                ${
+                    currentQuestion===total-1
+                    ?`
+                        <button
+                            class="submit-btn"
+                            onclick="submitQuiz()">
+                            ✓ Submit Quiz
+                        </button>
+                    `
+                    :`
+                        <button
+                            class="quiz-nav-btn"
+                            onclick="nextQuestion()">
+                            Next →
+                        </button>
+                    `
+                }
+            </div>
+        </div>
+    `;
+}
+
+function createOption(letter,text,selected){
+    const isSelected=selected===letter;
+
+    return`
+        <button
+            class="option ${isSelected?"selected":""}"
+            onclick="selectAnswer('${letter}')">
+
+            <span class="option-letter">${letter}</span>
+
+            <span class="option-text">
+                ${escapeHtml(text)}
+            </span>
+        </button>
+    `;
+}
+
+function selectAnswer(answer){
+    if(submitted)return;
+
+    const question=quiz.questions[currentQuestion];
+
+    selectedAnswers[question.id]=answer;
+
+    renderQuiz();
+}
+
+function previousQuestion(){
+    if(currentQuestion>0){
+        currentQuestion--;
+        renderQuiz();
+    }
+}
+
+function nextQuestion(){
+    const question=quiz.questions[currentQuestion];
+
+    if(!selectedAnswers[question.id]){
+        showError("Please select an answer before continuing.");
+        return;
+    }
+
+    if(currentQuestion<quiz.questions.length-1){
+        currentQuestion++;
+        renderQuiz();
+    }
+}
+
+async function submitQuiz(){
+    if(submitted)return;
+
+    const unanswered=quiz.questions.filter(
+        question=>!selectedAnswers[question.id]
+    );
+
+    if(unanswered.length>0){
+        showError("Please answer all questions before submitting.");
+        return;
+    }
+
+    const answers=quiz.questions.map(question=>({
+        questionId:question.id,
+        selectedAnswer:selectedAnswers[question.id]
+    }));
+
+    submitted=true;
+
+    const area=document.getElementById("quizArea");
+
+    area.innerHTML=`
+        <div class="loading">
+            📊 Calculating your score...
+        </div>
+    `;
+
+    try{
+        const response=await fetch(
+            "http://localhost:8080/api/quizzes/"+quiz.id+"/attempt",
+            {
+                method:"POST",
+                headers:{
+                    "Authorization":"Bearer "+token,
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                    answers:answers
+                })
+            }
+        );
+
+        const data=await response.json().catch(()=>({}));
+
+        if(response.status===401||response.status===403){
+            localStorage.clear();
+            window.location.href="/login.html";
+            return;
+        }
+
+        if(!response.ok){
+            throw new Error(data.message||"Unable to submit quiz.");
+        }
+
+        showResult(data);
+
+    }catch(error){
+        console.error(error);
+        submitted=false;
+
+        showError(error.message||"Unable to submit quiz.");
+        renderQuiz();
+    }
+}
+
+function showResult(result){
+    const percentage=Number(result.percentage||0);
+
+    let icon="📚";
+
+    if(percentage>=80){
+        icon="🎉";
+    }else if(percentage>=60){
+        icon="👍";
+    }else if(percentage>=40){
+        icon="💪";
+    }else{
+        icon="📖";
+    }
+
+    const area=document.getElementById("quizArea");
+
+    const answerResults=Array.isArray(result.answers)
+        ?result.answers
+        :[];
+
+    const answersHtml=answerResults.length>0
+        ?`
+            <div class="answer-results">
+                <h3>Question-wise Results</h3>
+
+                ${answerResults.map((answer,index)=>`
+                    <div class="answer-result ${answer.correct?"correct":"wrong"}">
+
+                        <div class="answer-question">
+                            Question ${index+1}: 
+                            ${escapeHtml(answer.question)}
+                        </div>
+
+                        <div class="answer-row">
+                            <strong>Your Answer:</strong>
+                            <span>
+                                ${escapeHtml(
+                                    answer.selectedAnswer||"Not answered"
+                                )}
+                            </span>
+                        </div>
+
+                        <div class="answer-row">
+                            <strong>Correct Answer:</strong>
+                            <span>
+                                ${escapeHtml(answer.correctAnswer||"-")}
+                            </span>
+                        </div>
+
+                        <div class="answer-status">
+                            ${answer.correct?"✓ Correct":"✗ Wrong"}
+                        </div>
+
+                    </div>
+                `).join("")}
+            </div>
+        `
+        :"";
+
+    area.innerHTML=`
+        <div class="result-card">
+
+            <div class="result-icon">${icon}</div>
+
+            <h2>Quiz Completed!</h2>
+
+            <div class="result-score">
+                ${percentage.toFixed(1)}%
+            </div>
+
+            <p class="result-message">
+                ${escapeHtml(
+                    result.message||
+                    "Keep learning and improving!"
+                )}
+            </p>
+
+            <p style="
+                color:#64748b;
+                font-size:13px;
+                margin-bottom:25px;
+            ">
+                Score:
+                ${result.score}
+                /
+                ${result.totalQuestions}
+            </p>
+
+            ${answersHtml}
+
+            <div class="result-actions">
+
+                <button
+                    class="retry-btn"
+                    onclick="retryQuiz()">
+                    🔄 Retry Quiz
+                </button>
+
+                <button
+                    class="history-btn"
+                    onclick="goHistory()">
+                    📊 Quiz History
+                </button>
+
+            </div>
+
+        </div>
+    `;
+}
+
+function retryQuiz(){
+    currentQuestion=0;
+    selectedAnswers={};
+    submitted=false;
+    renderQuiz();
+}
+
+function goDocuments(){
+    const currentSubjectId=
+        localStorage.getItem("currentSubjectId");
+
+    if(currentSubjectId){
+        window.location.href=
+            "/documents.html?subjectId="+currentSubjectId;
+    }else{
+        window.location.href="/subjects.html";
+    }
+}
+
+function goDashboard(){
+    window.location.href="/dashboard.html";
+}
+
+function goHistory(){
+    window.location.href="/quiz-history.html";
+}
+
+function logout(){
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("currentSubjectId");
+
+    window.location.href="/login.html";
+}
+
+function showError(message){
+    const box=document.getElementById("errorBox");
+
+    box.textContent=message;
+    box.style.display="block";
+
+    setTimeout(()=>{
+        box.style.display="none";
+    },5000);
+}
+
+function escapeHtml(value){
+    return String(value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+loadQuiz();
+</script>
+
+</body>
+</html>

@@ -26,21 +26,21 @@ public class QuizAttemptService {
 
     private final QuizAttemptRepository quizAttemptRepository;
     private final QuizAnswerRepository quizAnswerRepository;
-    private final QuizRepository quizRepository;
     private final QuizQuestionRepository quizQuestionRepository;
+    private final QuizRepository quizRepository;
     private final UserRepository userRepository;
 
     public QuizAttemptService(
             QuizAttemptRepository quizAttemptRepository,
             QuizAnswerRepository quizAnswerRepository,
-            QuizRepository quizRepository,
             QuizQuestionRepository quizQuestionRepository,
+            QuizRepository quizRepository,
             UserRepository userRepository) {
 
         this.quizAttemptRepository = quizAttemptRepository;
         this.quizAnswerRepository = quizAnswerRepository;
-        this.quizRepository = quizRepository;
         this.quizQuestionRepository = quizQuestionRepository;
+        this.quizRepository = quizRepository;
         this.userRepository = userRepository;
     }
 
@@ -50,169 +50,154 @@ public class QuizAttemptService {
             QuizAttemptRequest request,
             String email) {
 
-        // 1. Find logged-in user
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 2. Find quiz
         Quiz quiz = quizRepository.findById(quizId)
-                .orElseThrow(() ->
-                        new RuntimeException("Quiz not found"));
+                .orElseThrow(() -> new RuntimeException("Quiz not found"));
 
-        // 3. Check ownership
-        if (!quiz.getDocument()
-                .getSubject()
-                .getUser()
-                .getId()
+        if (!quiz.getDocument().getSubject().getUser().getId()
                 .equals(user.getId())) {
-
-            throw new RuntimeException(
-                    "You are not allowed to attempt this quiz");
+            throw new RuntimeException("You are not authorized to attempt this quiz");
         }
 
-        // 4. Get all questions of this quiz
         List<QuizQuestion> questions =
                 quizQuestionRepository.findByQuiz(quiz);
 
-        if (questions.isEmpty()) {
-            throw new RuntimeException(
-                    "Quiz has no questions");
-        }
-
-        // 5. Validate submitted answers
-        if (request.getAnswers() == null ||
+        if (request == null ||
+                request.getAnswers() == null ||
                 request.getAnswers().isEmpty()) {
 
-            throw new RuntimeException(
-                    "Answers cannot be empty");
+            throw new RuntimeException("Please submit at least one answer");
         }
 
-        // 6. Create attempt
-        QuizAttempt attempt = new QuizAttempt();
+        QuizAttempt attempt = QuizAttempt.builder()
+                .quiz(quiz)
+                .user(user)
+                .score(0)
+                .totalQuestions(questions.size())
+                .percentage(0.0)
+                .attemptedAt(LocalDateTime.now())
+                .build();
 
-        attempt.setQuiz(quiz);
-        attempt.setUser(user);
-        attempt.setTotalQuestions(questions.size());
-        attempt.setAttemptedAt(LocalDateTime.now());
+        attempt = quizAttemptRepository.save(attempt);
 
-        // 7. Calculate score
         int score = 0;
-
-        List<QuizAnswer> answersToSave =
-                new ArrayList<>();
+        List<QuizAnswer> answers = new ArrayList<>();
 
         for (QuizQuestion question : questions) {
 
-            QuizAnswerRequest submittedAnswer =
-                    request.getAnswers()
-                            .stream()
-                            .filter(answer ->
-                                    question.getId()
-                                            .equals(answer.getQuestionId()))
-                            .findFirst()
-                            .orElse(null);
+            QuizAnswerRequest submittedAnswer = request.getAnswers()
+                    .stream()
+                    .filter(answer ->
+                            answer.getQuestionId() != null &&
+                            answer.getQuestionId()
+                                    .equals(question.getId()))
+                    .findFirst()
+                    .orElse(null);
 
             if (submittedAnswer == null) {
                 continue;
             }
 
-            String selectedAnswer =
-                    submittedAnswer.getSelectedAnswer();
+            String selectedAnswer = submittedAnswer.getSelectedAnswer();
 
-            boolean isCorrect =
-                    question.getCorrectAnswer()
-                            .equalsIgnoreCase(selectedAnswer);
+            if (selectedAnswer == null ||
+                    selectedAnswer.isBlank()) {
+                continue;
+            }
 
-            if (isCorrect) {
+            selectedAnswer = selectedAnswer.trim().toUpperCase();
+
+            String correctAnswer =
+                    question.getCorrectAnswer().trim().toUpperCase();
+
+            boolean correct =
+                    selectedAnswer.equals(correctAnswer);
+
+            if (correct) {
                 score++;
             }
 
-            QuizAnswer quizAnswer =
-                    new QuizAnswer();
+            QuizAnswer quizAnswer = QuizAnswer.builder()
+                    .attempt(attempt)
+                    .question(question)
+                    .selectedAnswer(selectedAnswer)
+                    .correct(correct)
+                    .build();
 
-            quizAnswer.setAttempt(attempt);
-            quizAnswer.setQuestion(question);
-            quizAnswer.setSelectedAnswer(selectedAnswer);
-            quizAnswer.setCorrect(isCorrect);
-
-            answersToSave.add(quizAnswer);
+            answers.add(quizAnswer);
         }
 
-        // 8. Calculate percentage
-        double percentage =
-                (score * 100.0) / questions.size();
+        double percentage = questions.isEmpty()
+                ? 0.0
+                : ((double) score / questions.size()) * 100;
 
         attempt.setScore(score);
+        attempt.setTotalQuestions(questions.size());
         attempt.setPercentage(percentage);
 
-        // 9. Save attempt
-        QuizAttempt savedAttempt =
-                quizAttemptRepository.save(attempt);
+        quizAttemptRepository.save(attempt);
+        quizAnswerRepository.saveAll(answers);
 
-        // 10. Save individual answers
-        for (QuizAnswer answer : answersToSave) {
-            quizAnswerRepository.save(answer);
-        }
+        String message = getPerformanceMessage(percentage);
 
-        // 11. Prepare response
-        QuizAttemptResponse response =
-                new QuizAttemptResponse();
+        QuizAttemptResponse response = new QuizAttemptResponse();
 
-        response.setAttemptId(
-                savedAttempt.getId());
+        response.setAttemptId(attempt.getId());
+        response.setQuizId(quiz.getId());
+        response.setScore(attempt.getScore());
+        response.setTotalQuestions(attempt.getTotalQuestions());
+        response.setPercentage(attempt.getPercentage());
+        response.setMessage(message);
+        response.setAttemptedAt(attempt.getAttemptedAt());
 
-        response.setQuizId(
-                quiz.getId());
+        List<QuizAttemptResponse.AnswerResult> answerResults =
+                answers.stream()
+                        .map(answer ->
+                                new QuizAttemptResponse.AnswerResult(
+                                        answer.getQuestion().getId(),
+                                        answer.getQuestion().getQuestion(),
+                                        answer.getSelectedAnswer(),
+                                        answer.getQuestion().getCorrectAnswer(),
+                                        answer.getCorrect()
+                                ))
+                        .toList();
 
-        response.setScore(score);
-
-        response.setTotalQuestions(
-                questions.size());
-
-        response.setPercentage(percentage);
-
-        response.setMessage(
-                getResultMessage(percentage));
+        response.setAnswers(answerResults);
 
         return response;
     }
-    
+
     public List<QuizAttemptResponse> getMyAttempts(String email) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         List<QuizAttempt> attempts =
                 quizAttemptRepository.findByUser(user);
 
-        List<QuizAttemptResponse> responses =
-                new ArrayList<>();
+        List<QuizAttemptResponse> responses = new ArrayList<>();
 
         for (QuizAttempt attempt : attempts) {
 
             QuizAttemptResponse response =
                     new QuizAttemptResponse();
 
-            response.setAttemptId(
-                    attempt.getId());
-
-            response.setQuizId(
-                    attempt.getQuiz().getId());
-
-            response.setScore(
-                    attempt.getScore());
-
+            response.setAttemptId(attempt.getId());
+            response.setQuizId(attempt.getQuiz().getId());
+            response.setScore(attempt.getScore());
             response.setTotalQuestions(
                     attempt.getTotalQuestions());
-
             response.setPercentage(
                     attempt.getPercentage());
 
             response.setMessage(
-                    getResultMessage(
+                    getPerformanceMessage(
                             attempt.getPercentage()));
+
+            response.setAttemptedAt(
+                    attempt.getAttemptedAt());
 
             responses.add(response);
         }
@@ -220,21 +205,20 @@ public class QuizAttemptService {
         return responses;
     }
 
-    private String getResultMessage(
-            double percentage) {
+    private String getPerformanceMessage(double percentage) {
 
         if (percentage >= 80) {
-            return "Great job!";
+            return "Great job! You have a strong understanding of the topic.";
         }
 
         if (percentage >= 60) {
-            return "Good work! Keep practicing.";
+            return "Good work! Keep practicing to improve your score.";
         }
 
         if (percentage >= 40) {
-            return "Keep practicing to improve.";
+            return "Keep practicing! Review the study material and try again.";
         }
 
-        return "Don't give up. Review the material and try again.";
+        return "Don't give up! Review the material and try the quiz again.";
     }
 }

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dashboard | PrepPilot AI</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#0f172a;color:#f8fafc;min-height:100vh}
+
+.navbar{height:70px;background:#111827;border-bottom:1px solid #1e293b;display:flex;align-items:center;justify-content:space-between;padding:0 40px;position:sticky;top:0;z-index:10}
+.logo{color:#6366f1;font-size:22px;font-weight:bold}
+.nav-right{display:flex;align-items:center;gap:18px}
+.user-name{color:#cbd5e1;font-size:14px}
+.logout-btn{background:transparent;border:1px solid #334155;color:#cbd5e1;padding:9px 16px;border-radius:8px;cursor:pointer}
+.logout-btn:hover{background:#1e293b}
+
+.container{max-width:1150px;margin:auto;padding:40px 20px 60px}
+.welcome{margin-bottom:30px}
+.welcome h1{font-size:30px;margin-bottom:8px}
+.welcome p{color:#94a3b8;font-size:15px}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+.stat-card{background:#111827;border:1px solid #1e293b;border-radius:14px;padding:22px;transition:.2s}
+.stat-card:hover{border-color:#475569;transform:translateY(-2px)}
+.stat-icon{font-size:23px;margin-bottom:13px}
+.stat-label{color:#94a3b8;font-size:13px;margin-bottom:8px}
+.stat-value{font-size:28px;font-weight:bold}
+
+.dashboard-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;margin-bottom:25px}
+.panel{background:#111827;border:1px solid #1e293b;border-radius:15px;padding:25px}
+.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.panel-header h2{font-size:19px}
+.panel-subtitle{color:#64748b;font-size:12px}
+
+.performance-content{display:flex;align-items:center;gap:30px}
+.score-circle{width:135px;height:135px;border-radius:50%;border:9px solid #1e293b;display:flex;flex-direction:column;justify-content:center;align-items:center;flex-shrink:0}
+.score-circle strong{font-size:29px}
+.score-circle span{color:#94a3b8;font-size:11px;margin-top:3px}
+.performance-info{flex:1}
+.performance-info h3{font-size:17px;margin-bottom:8px}
+.performance-info p{color:#94a3b8;font-size:13px;line-height:1.6;margin-bottom:16px}
+.progress-container{width:100%;height:8px;background:#1e293b;border-radius:20px;overflow:hidden}
+.progress-bar{height:100%;width:0%;background:#6366f1;border-radius:20px;transition:width .7s ease}
+
+.actions-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.action-btn{background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:16px;border-radius:10px;cursor:pointer;text-align:left;transition:.2s}
+.action-btn:hover{border-color:#6366f1;background:#172033}
+.action-icon{font-size:21px;margin-bottom:9px}
+.action-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.action-description{color:#64748b;font-size:11px;line-height:1.4}
+
+.ai-panel{margin-bottom:25px}
+.ai-tools{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.ai-card{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:20px;cursor:pointer;transition:.2s}
+.ai-card:hover{border-color:#6366f1;transform:translateY(-2px)}
+.ai-icon{font-size:26px;margin-bottom:12px}
+.ai-card h3{font-size:15px;margin-bottom:7px}
+.ai-card p{color:#94a3b8;font-size:12px;line-height:1.5}
+
+.tip{background:#111827;border:1px solid #1e293b;border-radius:15px;padding:22px;display:flex;align-items:center;gap:16px}
+.tip-icon{font-size:28px}
+.tip h3{font-size:15px;margin-bottom:5px}
+.tip p{color:#94a3b8;font-size:12px;line-height:1.5}
+
+.loading{text-align:center;padding:70px 20px;color:#94a3b8}
+.error-box{display:none;background:#111827;border:1px solid #7f1d1d;color:#fca5a5;border-radius:10px;padding:14px;margin-bottom:20px;text-align:center;font-size:14px}
+
+@media(max-width:900px){
+    .stats-grid{grid-template-columns:repeat(2,1fr)}
+    .dashboard-grid{grid-template-columns:1fr}
+    .ai-tools{grid-template-columns:repeat(2,1fr)}
+}
+
+@media(max-width:600px){
+    .navbar{padding:0 18px}
+    .user-name{display:none}
+    .container{padding:30px 15px 50px}
+    .welcome h1{font-size:25px}
+    .stats-grid{grid-template-columns:1fr 1fr;gap:10px}
+    .stat-card{padding:17px}
+    .stat-value{font-size:23px}
+    .dashboard-grid{gap:15px}
+    .panel{padding:20px}
+    .performance-content{flex-direction:column;text-align:center}
+    .performance-info{width:100%}
+    .ai-tools{grid-template-columns:1fr}
+    .actions-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="logo">🚀 PrepPilot AI</div>
+
+    <div class="nav-right">
+        <span id="userName" class="user-name">Loading...</span>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+</nav>
+
+<main id="dashboard" class="container" style="display:none">
+
+    <section class="welcome">
+        <h1>Welcome back, <span id="welcomeName">Student</span> 👋</h1>
+        <p>Continue learning and keep improving your knowledge.</p>
+    </section>
+
+    <div id="errorBox" class="error-box"></div>
+
+    <section class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-label">Subjects</div>
+            <div id="totalSubjects" class="stat-value">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📄</div>
+            <div class="stat-label">Documents</div>
+            <div id="totalDocuments" class="stat-value">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-label">AI Quizzes</div>
+            <div id="totalQuizzes" class="stat-value">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">🧠</div>
+            <div class="stat-label">Flashcards</div>
+            <div id="totalFlashcards" class="stat-value">0</div>
+        </div>
+
+    </section>
+
+    <div class="dashboard-grid">
+
+        <section class="panel">
+            <div class="panel-header">
+                <h2>📈 Learning Performance</h2>
+                <span id="totalAttemptsLabel" class="panel-subtitle">0 attempts</span>
+            </div>
+
+            <div class="performance-content">
+
+                <div class="score-circle">
+                    <strong id="averageScore">0%</strong>
+                    <span>Average Score</span>
+                </div>
+
+                <div class="performance-info">
+                    <h3 id="performanceTitle">Start your first quiz</h3>
+
+                    <p id="performanceText">
+                        Complete an AI-generated quiz to start tracking your learning performance.
+                    </p>
+
+                    <div class="progress-container">
+                        <div id="progressBar" class="progress-bar"></div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="panel">
+
+            <div class="panel-header">
+                <h2>⚡ Quick Actions</h2>
+            </div>
+
+            <div class="actions-grid">
+
+                <button class="action-btn" onclick="openSubjects()">
+                    <div class="action-icon">📚</div>
+                    <div class="action-title">My Subjects</div>
+                    <div class="action-description">Manage your study subjects.</div>
+                </button>
+
+                <button class="action-btn" onclick="openSearch()">
+                    <div class="action-icon">🔎</div>
+                    <div class="action-title">Search</div>
+                    <div class="action-description">Find notes and flashcards.</div>
+                </button>
+
+                <button class="action-btn" onclick="openHistory()">
+                    <div class="action-icon">📊</div>
+                    <div class="action-title">Quiz History</div>
+                    <div class="action-description">Review your quiz performance.</div>
+                </button>
+
+                <button class="action-btn" onclick="openSubjects()">
+                    <div class="action-icon">🚀</div>
+                    <div class="action-title">Start Learning</div>
+                    <div class="action-description">Open your study materials.</div>
+                </button>
+
+            </div>
+        </section>
+
+    </div>
+
+    <section class="panel ai-panel">
+
+        <div class="panel-header">
+            <div>
+                <h2>🤖 AI Learning Tools</h2>
+                <span class="panel-subtitle">
+                    Turn your study material into active learning.
+                </span>
+            </div>
+        </div>
+
+        <div class="ai-tools">
+
+            <div class="ai-card" onclick="openSubjects()">
+                <div class="ai-icon">✨</div>
+                <h3>AI Summaries</h3>
+                <p>
+                    Convert long study documents into clear and concise summaries.
+                </p>
+            </div>
+
+            <div class="ai-card" onclick="openSubjects()">
+                <div class="ai-icon">🧠</div>
+                <h3>AI Flashcards</h3>
+                <p>
+                    Generate useful question-and-answer flashcards from your notes.
+                </p>
+            </div>
+
+            <div class="ai-card" onclick="openSubjects()">
+                <div class="ai-icon">📝</div>
+                <h3>AI Quizzes</h3>
+                <p>
+                    Test your understanding with AI-generated multiple-choice questions.
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="tip">
+        <div class="tip-icon">💡</div>
+        <div>
+            <h3>Study smarter, not harder</h3>
+            <p>
+                Upload your notes, generate a summary, create flashcards,
+                and test yourself with an AI quiz.
+            </p>
+        </div>
+    </section>
+
+</main>
+
+<div id="loading" class="loading">
+    🚀 Loading your dashboard...
+</div>
+
+<script>
+const token=localStorage.getItem("token");
+
+if(!token){
+    window.location.href="/login.html";
+}
+
+const storedName=localStorage.getItem("userName");
+
+if(storedName){
+    document.getElementById("userName").textContent=storedName;
+    document.getElementById("welcomeName").textContent=storedName;
+}
+
+async function loadDashboard(){
+    try{
+        const response=await fetch(
+            "http://localhost:8080/api/dashboard",
+            {
+                method:"GET",
+                cache:"no-store",
+                headers:{
+                    "Authorization":"Bearer "+token,
+                    "Cache-Control":"no-cache"
+                }
+            }
+        );
+
+        const data=await response.json().catch(()=>({}));
+
+        if(response.status===401||response.status===403){
+            localStorage.clear();
+            window.location.href="/login.html";
+            return;
+        }
+
+        if(!response.ok){
+            throw new Error(
+                data.message||"Unable to load dashboard."
+            );
+        }
+
+        renderDashboard(data);
+
+    }catch(error){
+        console.error(error);
+        showError(
+            error.message||"Unable to load dashboard."
+        );
+    }finally{
+        document.getElementById("loading").style.display="none";
+        document.getElementById("dashboard").style.display="block";
+    }
+}
+
+function renderDashboard(data){
+
+    const subjects=Number(data.totalSubjects||0);
+    const documents=Number(data.totalDocuments||0);
+    const quizzes=Number(data.totalQuizzes||0);
+    const flashcards=Number(data.totalFlashcards||0);
+    const attempts=Number(data.totalAttempts||0);
+    const average=Number(data.averageScore||0);
+
+    document.getElementById("totalSubjects").textContent=subjects;
+    document.getElementById("totalDocuments").textContent=documents;
+    document.getElementById("totalQuizzes").textContent=quizzes;
+    document.getElementById("totalFlashcards").textContent=flashcards;
+
+    document.getElementById("averageScore").textContent=
+        average.toFixed(1)+"%";
+
+    document.getElementById("totalAttemptsLabel").textContent=
+        attempts+(attempts===1?" attempt":" attempts");
+
+    document.getElementById("progressBar").style.width=
+        Math.min(average,100)+"%";
+
+    const title=document.getElementById("performanceTitle");
+    const text=document.getElementById("performanceText");
+
+    if(attempts===0){
+
+        title.textContent="Start your first quiz";
+
+        text.textContent=
+            "Complete an AI-generated quiz to start tracking your learning performance.";
+
+    }else if(average>=80){
+
+        title.textContent="Excellent performance! 🎉";
+
+        text.textContent=
+            "You are demonstrating a strong understanding of your study material. Keep it up!";
+
+    }else if(average>=60){
+
+        title.textContent="Good progress! 👍";
+
+        text.textContent=
+            "Your performance is on the right track. Keep practicing to improve further.";
+
+    }else if(average>=40){
+
+        title.textContent="Keep practicing! 💪";
+
+        text.textContent=
+            "Review your study material and use flashcards and quizzes to strengthen weak areas.";
+
+    }else{
+
+        title.textContent="More practice needed 📚";
+
+        text.textContent=
+            "Spend some time reviewing your notes and try the quizzes again.";
+    }
+}
+
+function openSubjects(){
+    window.location.href="/subjects.html";
+}
+
+function openSearch(){
+    window.location.href="/search.html";
+}
+
+function openHistory(){
+    window.location.href="/quiz-history.html";
+}
+
+function logout(){
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("currentSubjectId");
+
+    window.location.href="/login.html";
+}
+
+function showError(message){
+    const box=document.getElementById("errorBox");
+    box.textContent=message;
+    box.style.display="block";
+}
+
+/* Refresh when returning to Dashboard */
+window.addEventListener("pageshow",()=>{
+    if(localStorage.getItem("token")){
+        loadDashboard();
+    }
+});
+
+/* Refresh when browser/tab becomes active */
+document.addEventListener("visibilitychange",()=>{
+    if(!document.hidden&&localStorage.getItem("token")){
+        loadDashboard();
+    }
+});
+
+/* Initial load */
+loadDashboard();
+</script>
+
+</body>
+</html>
